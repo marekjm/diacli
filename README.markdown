@@ -11,12 +11,10 @@ Originally developed when author's GUI (X.org and GNOME, I'm looking at you) cra
 
 *   `python` - Python interpreter version 3.x,
 *   `diaspy` - unofficial Python API for Diaspora\*,
-*   `clap` - library used to build the user interface,
-*   a Diaspora\* account.
+*   `clap` - library used to build the user interface.
 
-----
+You will of cource need a Diaspora\* account.
 
-#### Installation
 
 **Python**
 
@@ -34,16 +32,27 @@ After fetching from GitHub install using `setup.py` script.
 
 **`clap`**
 
-`clap` (which stands Command Line Arguments Parser) can only be found [on GitHub](https://github.com/marekjm/clap). 
+`clap` (which stands for **C**ommand **L**ine **A**rguments **P**arser) can only be found [on GitHub](https://github.com/marekjm/clap). 
 If you want to be on the safe side use `master` branch but if you are not afraid of insects you can also try 
 `devel`. 
 You will have to manually install the code in your `site-packages`.
 
-**`diacli`**
+----
+
+#### Installation
 
 Move `diacli.py` to `~/.local/bin` (or any place when executables are placed on your system -- 
 `~/.local/bin` just don't require you to go root), 
 rename it to `diacli` (`mv diacli.py diacli`) and make it executable (`chmod +x diacli`).
+
+    git clone https://github.com/marekjm/diacli.git
+    cd diacli
+    cp ./diacli.py ~/.local/bin
+    cd ~/.local/bin
+    mv ./diacli.py ./diacli
+    chmod +x ./diacli
+
+And you are all set.
 
 ----
 
