@@ -1,4 +1,4 @@
-### `diacli` -- Diaspora\* Command Line Interface
+### `diacli` - Diaspora\* Command Line Interface
 
 
 `diacli` is the program that let's you communicate with Diaspora\* from the command line. 
@@ -51,6 +51,12 @@ rename it to `diacli` (`mv diacli.py diacli`) and make it executable (`chmod +x 
     cd ~/.local/bin
     mv ./diacli.py ./diacli
     chmod +x ./diacli
+
+If you are OK with the `~/.local/bin` default installation directory you can just do:
+
+    git clone https://github.com/marekjm/diacli.git
+    cd diacli
+    make install
 
 And you are all set.
 
