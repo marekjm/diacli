@@ -39,9 +39,14 @@ notifs (short for 'notifications'):
     -r, --read                  - mark listed notifications as read (by default notifications are not marked)
     -p, --page N                - print N-th page of notifications
     -P, --per-page N            - print N notifications per page
-"""
 
-__version__ = '0.0.11'
+
+
+This is free software published under GNU GPL v3 license or any later version of this license.
+
+Copyright Marek Marecki (c) 2013"""
+
+__version__ = '0.0.12'
 
 import getpass
 import sys
@@ -169,7 +174,6 @@ if '--handle' in options:
         #   if schema is passed on the command line
         #   the default value will be overwritten by it
         schema = options.get('--schema')
-
     #   create pod URL from given schema and pod
     pod = '{0}://{1}'.format(schema, pod)
 else:
@@ -211,7 +215,8 @@ if str(options) == 'post':
         else: photo = ''
         #   user can enetr text as a single string encapsulated in '' but to prevent mistakes diacli
         #   will join every string passed as an argument and post it all
-        text = ' '.join(options.arguments)
+        text = options.get('--send')
+        text = text.replace('\\n', '\n')
         if text or photo:
             #   if text or photo is given it will be posted
             message = repr(diaspy.streams.Activity(connection).post(text=text, photo=photo))
