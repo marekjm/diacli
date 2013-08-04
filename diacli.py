@@ -58,21 +58,23 @@ formater = clap.formater.Formater(sys.argv[1:])
 formater.format()
 
 post = clap.parser.Parser()
-post.add(short='s', long='send', argument=str)
+post.add(short='s', long='send', arguments=[str])
 post.add(short='r', long='read', requires=['--id'], conflicts=['--send'])
 post.add(short='a', long='also-comments', requires=['--read'])
 post.add(short='C', long='comment', requires=['--id'], conflicts=['--send'])
 post.add(short='R', long='reshare', requires=['--id'], conflicts=['--send'])
 post.add(short='l', long='like', requires=['--id'], conflicts=['--send'])
-post.add(short='I', long='id', argument=int, conflicts=['--send'])
+post.add(short='I', long='id', arguments=[int], conflicts=['--send'])
 
 notifications = clap.parser.Parser()
 notifications.add(short='l', long='last', conflicts=['--page'])
 notifications.add(short='r', long='read')
-notifications.add(short='p', long='page', argument=int, conflicts=['--last'])
-notifications.add(short='P', long='per-page', argument=int, requires=['--page'])
+notifications.add(short='p', long='page', arguments=[int], conflicts=['--last'])
+notifications.add(short='P', long='per-page', arguments=[int], requires=['--page'])
 
 stream = clap.parser.Parser()
+
+config = clap.parser.Parser()
 
 options = clap.modes.Parser(list(formater))
 options.addMode('post', post)
@@ -80,11 +82,11 @@ options.addMode('notifs', notifications)
 options.addMode('stream', stream)
 options.addOption(short='h', long='help')
 options.addOption(short='v', long='version')
-options.addOption(short='C', long='component', argument=str)
+options.addOption(short='C', long='component', arguments=[str])
 options.addOption(short='V', long='verbose')
-options.addOption(short='H', long='handle', argument=diaspy.people.sephandle)
-options.addOption(long='schema', argument=str, requires=['--handle'])
-options.addOption(long='save-auth', argument=int)
+options.addOption(short='H', long='handle', arguments=[diaspy.people.sephandle])
+options.addOption(long='schema', arguments=[str], requires=['--handle'])
+options.addOption(long='save-auth', arguments=[int])
 
 
 def fatal(message):

@@ -60,6 +60,18 @@ If you are OK with the `~/.local/bin` default installation directory you can jus
 
 And you are all set.
 
+##### Configuration
+
+You can manage your configuration using `config` mode.
+
+Configuration is read from:
+
+    ~/.diacli/conf.json
+
+Keys that have some meaning are:
+
+*   `handle`:   your handle,
+
 ----
 
 #### Bugs
