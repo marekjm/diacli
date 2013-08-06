@@ -1,0 +1,106 @@
+{
+    "posts": [
+        {
+            "short": "s",
+            "long": "send",
+            "arguments": ["str"]
+        },
+        {
+            "short": "r",
+            "long": "read",
+            "requires": ["--id"],
+            "conflicts": ["--send"]
+        },
+        {
+            "short": "a",
+            "long": "also-comments",
+            "requires": ["--read"]
+        },
+        {
+            "short": "c",
+            "long": "comment",
+            "requires": ["--id"],
+            "conflicts": ["--send"]
+        },
+        {
+            "short": "R",
+            "long": "reshare",
+            "requires": ["--id"],
+            "conflicts": ["--send"]
+        },
+        {
+            "short": "l",
+            "long": "like",
+            "requires": ["--id"],
+            "conflicts": ["--send"]
+        },
+        {
+            "short": "I",
+            "long": "id",
+            "arguments": ["str"],
+            "conflicts": ["--send"]
+        }
+    ],
+    "notifs": [
+        {
+            "short": "l",
+            "long": "last",
+            "conflicts": ["--page"]
+        },
+        {
+            "short": "r",
+            "long": "read"
+        },
+        {
+            "short": "p",
+            "long": "page",
+            "arguments": ["int"],
+            "conflicts": ["--last"]
+        },
+        {
+            "short": "P",
+            "long": "per-page",
+            "arguments": ["int"],
+            "conflicts": ["--last"]
+        }
+    ],
+    "stream": [
+    ],
+    "__global__": [
+        {
+            "short": "h",
+            "long": "help"
+        },
+        {
+            "short": "v",
+            "long": "version"
+        },
+        {
+            "short": "C",
+            "long": "component",
+            "arguments": ["str"]
+        },
+        {
+            "short": "V",
+            "long": "verbose"
+        },
+        {
+            "short": "Q",
+            "long": "quiet"
+        },
+        {
+            "short": "H",
+            "long": "handle",
+            "arguments": ["handle"]
+        },
+        {
+            "long": "schema",
+            "requires": ["--handle"],
+            "arguments": ["str"]
+        },
+        {
+            "long": "save-auth",
+            "arguments": ["int"]
+        }
+    ]
+}

@@ -46,57 +46,37 @@ This is free software published under GNU GPL v3 license or any later version of
 
 Copyright Marek Marecki (c) 2013"""
 
-__version__ = '0.0.12'
 
 import getpass
+import os
 import sys
+
 import diaspy
 import clap
+
+
+__version__ = '0.0.13'
 
 
 formater = clap.formater.Formater(sys.argv[1:])
 formater.format()
 
-post = clap.parser.Parser()
-post.add(short='s', long='send', arguments=[str])
-post.add(short='r', long='read', requires=['--id'], conflicts=['--send'])
-post.add(short='a', long='also-comments', requires=['--read'])
-post.add(short='C', long='comment', requires=['--id'], conflicts=['--send'])
-post.add(short='R', long='reshare', requires=['--id'], conflicts=['--send'])
-post.add(short='l', long='like', requires=['--id'], conflicts=['--send'])
-post.add(short='I', long='id', arguments=[int], conflicts=['--send'])
+try:
+    builder = clap.builder.ModesParser(os.path.expanduser('~/.diacli/ui.json'), argv=list(formater))
+    builder.addTypeHandler('handle', diaspy.people.sephandle)
+except FileNotFoundError:
+    exit('diacli: fatal: cannot find UI file: {0}'.format(os.path.expanduser('~/.diacli/ui.json')))
 
-notifications = clap.parser.Parser()
-notifications.add(short='l', long='last', conflicts=['--page'])
-notifications.add(short='r', long='read')
-notifications.add(short='p', long='page', arguments=[int], conflicts=['--last'])
-notifications.add(short='P', long='per-page', arguments=[int], requires=['--page'])
-
-stream = clap.parser.Parser()
-
-config = clap.parser.Parser()
-
-options = clap.modes.Parser(list(formater))
-options.addMode('post', post)
-options.addMode('notifs', notifications)
-options.addMode('stream', stream)
-options.addOption(short='h', long='help')
-options.addOption(short='v', long='version')
-options.addOption(short='C', long='component', arguments=[str])
-options.addOption(short='V', long='verbose')
-options.addOption(short='H', long='handle', arguments=[diaspy.people.sephandle])
-options.addOption(long='schema', arguments=[str], requires=['--handle'])
-options.addOption(long='save-auth', arguments=[int])
+options = builder.build()
+options.feed(list(formater))
 
 
 def fatal(message):
     """Prints fatal message and exits.
     """
-    print('diaspyc: fatal: {0}'.format(message))
+    exit('diaspyc: fatal: {0}'.format(message))
 
 try:
-    #   define mode to work with
-    options.define()
     #   check options for errors
     options.check()
     fail = False
@@ -124,7 +104,6 @@ except clap.errors.ConflictingOptionsError as e:
 finally:
     if fail: exit(1)
     else: options.parse()
-
 
 if '--version' in options:
     """Print version information.
