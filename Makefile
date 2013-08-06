@@ -9,4 +9,5 @@ install:
 	chmod +x ./diacli
 	mv ./diacli ~/.local/bin/
 	mkdir ~/.diacli
-	echo "" > ~/.diacli/conf.json
+	cp ./ui.json ~/.diacli/
+	touch ~/.diacli/conf.json
