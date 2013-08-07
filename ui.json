@@ -78,7 +78,8 @@
         {
             "short": "C",
             "long": "component",
-            "arguments": ["str"]
+            "arguments": ["str"],
+            "requires": ["--version"]
         },
         {
             "short": "V",

@@ -8,17 +8,15 @@ post something using CLI.
 
 
 SYNTAX:
-    diaspyc [global options ...] [MODE [mode options ...]]
+    diacli [global options ...] [MODE [mode options ...]]
 
 
 Global options:
-
     -V, --verbose               - be more verbose
     -h, --help                  - display this help
     -v, --version               - display version information
 
 Login options (global):
-
     -H, --handle HANDLE         - Diaspora* handle (overrides config)
         --save-auth N           - store auth data for N seconds (not implemented)
 
@@ -55,55 +53,64 @@ import diaspy
 import clap
 
 
-__version__ = '0.0.13'
+__version__ = '0.1.0'
 
 
+DEBUG = False
+
+
+#   creating input list (formating sys agrv)
 formater = clap.formater.Formater(sys.argv[1:])
 formater.format()
 
+#   detecting location of ui.json file
+location = ''
+for path in [('', 'usr', 'share', 'diacli'), (os.path.expanduser('~'), '.diacli'), ('.')]:
+    path = os.path.join(*path)
+    path = os.path.abspath(os.path.join(path, 'ui.json'))
+    if DEBUG: print(path)
+    if os.path.isfile(path):
+        location = path
+        break
+
+if location:    # if UI file was found - create builder
+    builder = clap.builder.Builder(path=location, argv=list(formater))
+else:           # if it was not - exit with appropriate message
+    exit('diacli: fatal: cannot find ui.json file')
+
+
+#   add type handlers for the interface
+builder.addTypeHandler('handle', diaspy.people.sephandle)
+
+#   build the interface
+builder.build()
+#   and get() it
+options = builder.get()
+
+
+success = False
 try:
-    builder = clap.builder.ModesParser(os.path.expanduser('~/.diacli/ui.json'), argv=list(formater))
-    builder.addTypeHandler('handle', diaspy.people.sephandle)
-except FileNotFoundError:
-    exit('diacli: fatal: cannot find UI file: {0}'.format(os.path.expanduser('~/.diacli/ui.json')))
-
-options = builder.build()
-options.feed(list(formater))
-
-
-def fatal(message):
-    """Prints fatal message and exits.
-    """
-    exit('diaspyc: fatal: {0}'.format(message))
-
-try:
-    #   check options for errors
+    #   check and parse options
     options.check()
-    fail = False
+    options.parse()
+    success = True
 except clap.errors.UnrecognizedModeError as e:
-    fatal('unrecognized mode: {0}'.format(e))
-    fail = True
+    print('diacli: fatal: unrecognized mode: {0}'.format(e))
 except clap.errors.UnrecognizedOptionError as e:
-    fatal('unrecognized option: {0}'.format(e))
-    fail = True
+    print('diacli: fatal: unrecognized option: {0}'.format(e))
 except clap.errors.RequiredOptionNotFoundError as e:
-    fatal('required option was not found: {0}'.format(e))
-    fail = True
+    print('diacli: fatal: required option was not found: {0}'.format(e))
 except clap.errors.NeededOptionNotFoundError as e:
-    fatal('at least one of needed options must be passed: {0}'.format(e))
-    fail = True
+    print('diacli: fatal: at least one of needed options must be passed: {0}'.format(e))
 except clap.errors.MissingArgumentError as e:
-    fatal('missing argument for option: {0}'.format(e))
-    fail = True
+    print('diacli: fatal: missing argument for option: {0}'.format(e))
 except (clap.errors.InvalidArgumentTypeError, diaspy.errors.UserError) as e:
-    fatal('invalid argument for option: {0}'.format(e))
-    fail = True
+    print('diacli: fatal: invalid argument for option: {0}'.format(e))
 except clap.errors.ConflictingOptionsError as e:
-    fatal('conflicting options: {0}'.format(e))
-    fail = True
+    print('diacli: fatal: conflicting options: {0}'.format(e))
 finally:
-    if fail: exit(1)
-    else: options.parse()
+    if not success: exit()
+
 
 if '--version' in options:
     """Print version information.
@@ -116,7 +123,7 @@ if '--version' in options:
     *   backend/diaspy: version of diaspy backend used,
     *   clap:           version of library used to create user interface,
     """
-    if '--verbose' in options: v = 'diaspyc version: {0} (diaspy backend: {1})'.format(__version__, diaspy.__version__)
+    if '--verbose' in options: v = 'diacli version: {0} (diaspy backend: {1})'.format(__version__, diaspy.__version__)
     else: v = __version__
     if '--component' in options:
         component = options.get('--component')
@@ -127,7 +134,7 @@ if '--version' in options:
             v = diaspy.__version__
         elif component == 'clap':
             v = clap.__version__
-        else: v = 'diaspyc: fatal: there is no \'{0}\' component'.format(component)
+        else: v = 'diacli: fatal: there is no \'{0}\' component'.format(component)
         if '--verbose' in options and 'fatal:' not in v:
             v = '{0} version: {1}'.format(component, v)
     print(v)
@@ -140,9 +147,9 @@ if '--help' in options:
     print(__doc__)
     exit(0)
 
-if not str(options):
-    #   if no mode is given finish execution
-    exit(0)
+
+if not str(options): exit(0)    # if no mode is given finish execution
+
 
 if '--handle' in options:
     #   if handle is given split it into pod and username and
@@ -175,11 +182,11 @@ except (KeyboardInterrupt, EOFError):
     print()
 finally:
     if fail:
-        #   this denotes that user cancelled the operation
+        #   user cancelled the operation
         exit(0)
     if '--save-auth' in options:
         #   save authorization data for later use
-        print('diaspyc: fail: --save-auth not implemented')
+        print('diacli: --save-auth not implemented')
 
 message = ''
 if str(options) == 'post':
@@ -201,7 +208,7 @@ if str(options) == 'post':
         if text or photo:
             #   if text or photo is given it will be posted
             message = repr(diaspy.streams.Activity(connection).post(text=text, photo=photo))
-        else: message = 'diaspyc: fatal: nothing to post'
+        else: message = 'diacli: fatal: nothing to post'
     if '--read' in options:
         #   we need to get id of post which user wants to read
         id = options.get('--id')
@@ -218,23 +225,23 @@ if str(options) == 'post':
         id = options.get('--id')
         post = diaspy.models.Post(connection, id)
         post.reshare()
-        if '--verbose' in options: message = 'diaspyc: you reshared {0}\'s post'.format(post.author('name'))
+        if '--verbose' in options: message = 'diacli: you reshared {0}\'s post'.format(post.author('name'))
     if '--comment' in options:
         #   comment on post with given id
         id = options.get('--id')
         post = diaspy.models.Post(connection, id)
         post.comment(options.get('--comment'))
-        if '--verbose' in options: message = 'diaspyc: you commented on {0}\'s post'.format(post.author('name'))
+        if '--verbose' in options: message = 'diacli: you commented on {0}\'s post'.format(post.author('name'))
     if '--like' in options:
         #   like post with given id
         id = options.get('--id')
         post = diaspy.models.Post(connection, id)
         post.like()
-        if '--verbose' in options: message = 'diaspyc: you liked {0}\'s post'.format(post.author('name'))
+        if '--verbose' in options: message = 'diacli: you liked {0}\'s post'.format(post.author('name'))
 elif str(options) == 'notifs':
     #   this mode allows user to check his/hers notifications
-    #
-    #   Firts, we create object representing user's notifications.
+
+    #   First, we create object representing user's notifications.
     notifications = diaspy.notifications.Notifications(connection)
     if '--page' in options:
         #   if user wants to read specific page of his/hers notifications
@@ -269,5 +276,5 @@ elif str(options) == 'notifs':
             n.mark(read=True)
 else:
     #   default message for not implememted modes
-    message = 'diaspyc: fatal: \'{0}\' mode not implemented'.format(str(options))
+    message = 'diacli: fatal: \'{0}\' mode not implemented'.format(str(options))
 if message: print(message)
