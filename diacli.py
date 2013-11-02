@@ -34,6 +34,7 @@ post:
 
 notifs (short for 'notifications'):
     -l, --last                  - check your unread notifications
+    -U, --unread-only           - display only unread notifications
     -r, --read                  - mark listed notifications as read (by default notifications are not marked)
     -p, --page N                - print N-th page of notifications
     -P, --per-page N            - print N notifications per page
@@ -53,7 +54,7 @@ import diaspy
 import clap
 
 
-__version__ = '0.1.0'
+__version__ = '0.1.1'
 
 
 DEBUG = False
@@ -65,14 +66,14 @@ formater.format()
 
 #   detecting location of ui.json file
 location = ''
-for path in [('', 'usr', 'share', 'diacli'), (os.path.expanduser('~'), '.diacli'), ('.')]:
+# cwd is first to make testing easier
+for path in [('.'), ('', 'usr', 'share', 'diacli'), (os.path.expanduser('~'), '.diacli')]:
     path = os.path.join(*path)
     path = os.path.abspath(os.path.join(path, 'ui.json'))
     if DEBUG: print(path)
     if os.path.isfile(path):
         location = path
         break
-
 if location:    # if UI file was found - create builder
     builder = clap.builder.Builder(path=location, argv=list(formater))
 else:           # if it was not - exit with appropriate message
@@ -176,6 +177,7 @@ try:
     connection = diaspy.connection.Connection(pod=pod, username=username, password=password)
     #   ...and login into a pod
     connection.login()
+    fail = False
 except (KeyboardInterrupt, EOFError):
     #   if user cancels the login, exit cleanly
     fail = True
@@ -240,7 +242,6 @@ if str(options) == 'post':
         if '--verbose' in options: message = 'diacli: you liked {0}\'s post'.format(post.author('name'))
 elif str(options) == 'notifs':
     #   this mode allows user to check his/hers notifications
-
     #   First, we create object representing user's notifications.
     notifications = diaspy.notifications.Notifications(connection)
     if '--page' in options:
@@ -258,11 +259,13 @@ elif str(options) == 'notifs':
         notifs = notifications.get(per_page=per_page, page=page)
     elif '--last' in options:
         #   if user wants to just view his/hers --last notifications
-        notifs = notifications.last()
+        if '--per-page' in options: notifs = notifications.get(per_page=options.get('--per-page'), page=1)
+        else: notifs = notifications.last()
     else:
         #   if none of the above is True no notifications will be printed
         notifs = []
     for n in notifs:
+        if not n.unread and '--unread-only' in options: continue
         #   print every notification found
         text = repr(n)
         about = n.about()

@@ -1,5 +1,5 @@
 {
-    "posts": [
+    "post": [
         {
             "short": "s",
             "long": "send",
@@ -60,8 +60,11 @@
         {
             "short": "P",
             "long": "per-page",
-            "arguments": ["int"],
-            "conflicts": ["--last"]
+            "arguments": ["int"]
+        },
+        {
+            "short": "U",
+            "long": "unread-only"
         }
     ],
     "stream": [
