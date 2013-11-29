@@ -103,8 +103,21 @@
             "arguments": ["str"]
         },
         {
-            "long": "save-auth",
-            "arguments": ["int"]
+            "short": "s",
+            "long": "save-auth"
+        },
+        {
+            "short": "L",
+            "long": "load-auth"
+        },
+        {
+            "long": "set-default",
+            "requires": ["--handle"]
+        },
+        {
+            "short": "D",
+            "long": "use-default",
+            "conflicts": ["--handle"]
         }
     ]
 }

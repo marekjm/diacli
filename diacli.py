@@ -12,13 +12,20 @@ SYNTAX:
 
 
 Global options:
-    -V, --verbose               - be more verbose
     -h, --help                  - display this help
     -v, --version               - display version information
+    -V, --verbose               - be more verbose
+    -C, --component <str>       - which component's version to display: ui, backend/diaspy, clap
+    -Q, --quiet                 - be quiet
+
 
 Login options (global):
     -H, --handle HANDLE         - Diaspora* handle (overrides config)
-        --save-auth N           - store auth data for N seconds (not implemented)
+        --schema <str>          - schema to use (if not set by this option defaults to https)
+    -s, --save-auth             - store auth data for N seconds (not implemented)
+    -L, --load-auth             - load saved password associated with handle being used
+        --set-default           - set handle being used as default
+    -D, --use-default           - use default handle (if it's not set you will be just asked for login data)
 
 
 post:
@@ -46,15 +53,17 @@ This is free software published under GNU GPL v3 license or any later version of
 Copyright Marek Marecki (c) 2013"""
 
 
+import json
 import getpass
 import os
+import re
 import sys
 
 import diaspy
 import clap
 
 
-__version__ = '0.1.1'
+__version__ = '0.1.2'
 
 
 DEBUG = False
@@ -152,29 +161,77 @@ if '--help' in options:
 if not str(options): exit(0)    # if no mode is given finish execution
 
 
+def getauthdb():
+    """Returns dict of stored auth data database.
+    """
+    if os.path.isfile(os.path.expanduser('~/.diacli/auth.json')):
+        ifstream = open(os.path.expanduser('~/.diacli/auth.json'))
+        try:
+            authdb = json.loads(ifstream.read())
+        except ValueError:
+            authdb = {}
+        finally:
+            ifstream.close()
+    else:
+        authdb = {}
+    return authdb
+
+
+def setdefaulthandle(pod, username):
+    """Sets default handle.
+    """
+    ofstream = open(os.path.expanduser('~/.diacli/defhandle.json'), 'w')
+    ofstream.write(json.dumps({'pod': pod, 'username': username}))
+    ofstream.close()
+
+
+def getdefaulthandle():
+    """Returns default handle.
+    """
+    if os.path.isfile(os.path.expanduser('~/.diacli/defhandle.json')):
+        ifstream = open(os.path.expanduser('~/.diacli/defhandle.json'))
+        try:
+            handle = json.loads(ifstream.read())
+        except ValueError:
+            handle = {'pod': '', 'username': ''}
+        finally:
+            ifstream.close()
+    else:
+        handle = {'pod': '', 'username': ''}
+    return (handle['pod'], handle['username'])
+
+
 if '--handle' in options:
     #   if handle is given split it into pod and username and
     #   set these fileds accordingly
     pod, username = options.get('--handle')
-
-    #   default shcema is https
+else:
+    #   if handle was not given set username and pod to empty strings
+    #   so it will be detected that the user must give them
+    pod, username = '', ''
+if '--set-default' in options: setdefaulthandle(pod, username)
+if '--use-default' in options: pod, username = getdefaulthandle()
+try:
+    if not pod: pod = input('Diaspora* pod: ')
+    if not username: username = input('Username for {0}: '.format(pod))
+    if '--load-auth' in options:
+        authdb = getauthdb()
+        key = '{0}@{1}'.format(username, pod)
+        if key in authdb: password = authdb[key]
+    else:
+        password = getpass.getpass('Password for {0}@{1}: '.format(username, pod))
+    #   default schema is https
     schema = 'https'
     if '--schema' in options:
         #   if schema is passed on the command line
         #   the default value will be overwritten by it
         schema = options.get('--schema')
     #   create pod URL from given schema and pod
-    pod = '{0}://{1}'.format(schema, pod)
-else:
-    #   if handle was not given set username and pod to empty strings
-    #   so it will be detected that the user must give them
-    pod, username = '', ''
-try:
-    if not pod: pod = input('Diaspora* pod: ')
-    if not username: username = input('Username for {0}: '.format(pod))
-    password = getpass.getpass('Password for {0}@{1}: '.format(username, pod))
+    if not re.compile('^[a-z]://.*').match(pod): schemed = '{0}://{1}'.format(schema, pod)
+    else: schemed = pod
+
     #   we create connection which will be used later...
-    connection = diaspy.connection.Connection(pod=pod, username=username, password=password)
+    connection = diaspy.connection.Connection(pod=schemed, username=username, password=password)
     #   ...and login into a pod
     connection.login()
     fail = False
@@ -182,13 +239,20 @@ except (KeyboardInterrupt, EOFError):
     #   if user cancels the login, exit cleanly
     fail = True
     print()
+except (Exception) as e:
+    fail = True
+    print('error encountered: {0}'.format(e))
 finally:
     if fail:
         #   user cancelled the operation
         exit(0)
     if '--save-auth' in options:
         #   save authorization data for later use
-        print('diacli: --save-auth not implemented')
+        authdb = getauthdb()
+        authdb['{0}@{1}'.format(username, pod)] = password
+        ofstream = open(os.path.expanduser('~/.diacli/auth.json'), 'w')
+        authdb = ofstream.write(json.dumps(authdb))
+        ofstream.close()
 
 message = ''
 if str(options) == 'post':
