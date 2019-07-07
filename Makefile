@@ -6,7 +6,8 @@ update:
 	cp ./diacli.py ./diacli
 	chmod +x ./diacli
 	mv ./diacli ~/.local/bin/
-	cp ./ui.json ~/.diacli/
+	mkdir -p ~/.local/share/diacli
+	cp ./ui.json ~/.local/share/diacli/
 
 install:
 	make check

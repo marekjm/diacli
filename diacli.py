@@ -69,40 +69,26 @@ __version__ = '0.1.2'
 DEBUG = False
 
 
-#   creating input list (formating sys agrv)
-formatter = clap.formatter.Formatter(sys.argv[1:])
-formatter.format()
+filename_ui = os.path.expanduser('~/.local/share/diacli/ui.json')
+model = {}
+with open(filename_ui, 'r') as ifstream: model = json.loads(ifstream.read())
 
-#   detecting location of ui.json file
-location = ''
-# cwd is first to make testing easier
-for path in [('.'), ('', 'usr', 'share', 'diacli'), (os.path.expanduser('~'), '.diacli')]:
-    path = os.path.join(*path)
-    path = os.path.abspath(os.path.join(path, 'ui.json'))
-    if DEBUG: print(path)
-    if os.path.isfile(path):
-        location = path
-        break
-if location:    # if UI file was found - create builder
-    builder = clap.builder.Builder(path=location, argv=list(formatter))
-else:           # if it was not - exit with appropriate message
-    exit('diacli: fatal: cannot find ui.json file')
+args = list(clap.formatter.Formatter(sys.argv[1:]).format())
 
-
+builder = clap.builder.Builder(model).insertHelpCommand()
 #   add type handlers for the interface
 builder.addTypeHandler('handle', diaspy.people.sephandle)
 
-#   build the interface
-builder.build()
-#   and get() it
-options = builder.get()
+command = builder.build().get()
+parser = clap.parser.Parser(command).feed(args)
+checker = clap.checker.RedChecker(parser)
 
+options = None
 
 success = False
 try:
-    #   check and parse options
-    options.check()
-    options.parse()
+    err = None
+    checker.check()
     success = True
 except clap.errors.UnrecognizedModeError as e:
     print('diacli: fatal: unrecognized mode: {0}'.format(e))
@@ -120,6 +106,7 @@ except clap.errors.ConflictingOptionsError as e:
     print('diacli: fatal: conflicting options: {0}'.format(e))
 finally:
     if not success: exit()
+    options = parser.parse().ui().finalise()
 
 
 if '--version' in options:
