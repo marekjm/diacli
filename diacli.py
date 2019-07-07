@@ -3,7 +3,7 @@
 """This is a Diaspora* client written using `diaspy` API.
 
 The story that led to it's creation is quite funny because
-it's about the author who misconfigured X.org and had to 
+it's about the author who misconfigured X.org and had to
 post something using CLI.
 
 
@@ -70,8 +70,8 @@ DEBUG = False
 
 
 #   creating input list (formating sys agrv)
-formater = clap.formater.Formater(sys.argv[1:])
-formater.format()
+formatter = clap.formatter.Formatter(sys.argv[1:])
+formatter.format()
 
 #   detecting location of ui.json file
 location = ''
@@ -84,7 +84,7 @@ for path in [('.'), ('', 'usr', 'share', 'diacli'), (os.path.expanduser('~'), '.
         location = path
         break
 if location:    # if UI file was found - create builder
-    builder = clap.builder.Builder(path=location, argv=list(formater))
+    builder = clap.builder.Builder(path=location, argv=list(formatter))
 else:           # if it was not - exit with appropriate message
     exit('diacli: fatal: cannot find ui.json file')
 

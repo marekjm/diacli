@@ -32,10 +32,11 @@ After fetching from GitHub install using `setup.py` script.
 
 **`clap`**
 
-`clap` (which stands for **C**ommand **L**ine **A**rguments **P**arser) can only be found [on GitHub](https://github.com/marekjm/clap). 
-If you want to be on the safe side use `master` branch but if you are not afraid of insects you can also try 
-`devel`. 
-You will have to manually install the code in your `site-packages`.
+`clap` can only be found [on GitHub](https://github.com/marekjm/clap). 
+Use version 0.12.1 or later. CLAP is now mostly stable so you can also use the
+most recent code from `master` or `devel` and you should be good to go.
+You will have to manually install the code in your `site-packages` by executing
+`make local-install` in cloned CLAP repository.
 
 ----
 
