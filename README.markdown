@@ -1,8 +1,8 @@
 ### `diacli` - Diaspora\* Command Line Interface
 
 
-`diacli` is the program that let's you communicate with Diaspora\* from the command line. 
-Originally developed when author's GUI (X.org and GNOME, I'm looking at you) crashed and refused to come to life again.
+`diacli` is the program that lets you communicate with Diaspora\* from the command line.
+Originally developed when the author's GUI (X.org and GNOME, I'm looking at you) crashed and refused to come to life again.
 
 
 #### Dependencies
@@ -13,7 +13,7 @@ Originally developed when author's GUI (X.org and GNOME, I'm looking at you) cra
 *   `diaspy` - unofficial Python API for Diaspora\*,
 *   `clap` - library used to build the user interface.
 
-You will of cource need a Diaspora\* account.
+You will of course need a Diaspora\* account.
 
 
 **Python**
